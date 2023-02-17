@@ -14,17 +14,21 @@ class AliAnalysisTaskRho;
 class AliAnalysisGrid;
 class AliAnalysisAlien;
 
+class AliAnalysisTaskEmcalJetValidation;
+
+#include "AliAnalysisTaskEmcalJetValidation.h"
+#include "AddTaskEmcalJetValidation.C"
+
+
+
 #ifdef __CLING__
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 R__ADD_INCLUDE_PATH($ALICE_ROOT)
-
-#include <PWGJE/FlavourJetTasks/macros/AddTaskEmcalJetValidation.C>
 #include <ANALYSIS/macros/AddTaskPIDResponse.C>
 #include <OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C>
 #include <AliAnalysisManager.h>
 #include <AliPIDResponse.h>
 //#include <AddbjetsTask.C>
-#include <AliAnalysisTaskEmcalJetValidation.h>
 #include <AliAnalysisTaskPIDResponse.h>
 #include <AliAODInputHandler.h>
 #include <AliAnalysisAlien.h>
@@ -71,7 +75,7 @@ void runAnalysis()
     //AliAODInputHandler *aodH = new AliAODInputHandler();
     //mgr->SetInputEventHandler(aodH);
 
-    AliESDInputHandler* pESDHandler = AliAnalysisTaskEmcal::AddESDandler();
+    AliESDInputHandler* pESDHandler = AliAnalysisTaskEmcal::AddESDHandler();
     mgr->SetInputEventHandler(pESDHandler);
 
    //TMacro PIDadd(gSystem->ExpandPathName("ANALYSIS/macros/AddTaskPIDResponse.C"));
@@ -93,13 +97,13 @@ void runAnalysis()
   taskCDB->SetFallBackToRaw(kTRUE);			// this task does some important calibration
 
   //AKT jet finding: pp Detector Level
-  AliEmcalJetTask *pJetTaskAKT = AliEmcalJetTask::AddTaskEmcalJet("usedefault", "", AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kChargedJet, 0.15, 0.30, 0.005, AliJetContainer::pt_scheme, "DetLevelJets",1., kFALSE, kFALSE);
-  pJetTaskAKT->SelectCollisionCandidates(AliVEvent::kINT7);
-  pJetTaskAKT->GetTrackContainer(0)->SetTrackFilterType(AliEmcalTrackSelection::kCustomTrackFilter);
-  pJetTaskAKT->GetTrackContainer(0)->SetESDFilterBits( 1<<4 | 1<<9);
+  //AliEmcalJetTask *pJetTaskAKT = AliEmcalJetTask::AddTaskEmcalJet("usedefault", "", AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kChargedJet, 0.15, 0.30, 0.005, AliJetContainer::pt_scheme, "DetLevelJets",1., kFALSE, kFALSE);
+  //pJetTaskAKT->SelectCollisionCandidates(AliVEvent::kINT7);
+  //pJetTaskAKT->GetTrackContainer(0)->SetTrackFilterType(AliEmcalTrackSelection::kCustomTrackFilter);
+  //pJetTaskAKT->GetTrackContainer(0)->SetESDFilterBits( 1<<4 | 1<<9);
 
-  TString kJetAKT_DetLevel_Name = pJetTaskAKT->GetName();
-  cout<<endl<<"AKT DETECTOR LEVEL "<<kJetAKT_DetLevel_Name.Data()<<endl<<endl;
+  //TString kJetAKT_DetLevel_Name = pJetTaskAKT->GetName();
+  //cout<<endl<<"AKT DETECTOR LEVEL "<<kJetAKT_DetLevel_Name.Data()<<endl<<endl;
 
 
   //  AliEmcalJetTask *pChJet04TaskMC = AliEmcalJetTask::AddTaskEmcalJet("mcparticles", "", AliJetContainer::antikt_algorithm, 0.4, AliJetContainer::kChargedJet, 0.15, 0.3, 0.01, AliJetContainer::E_scheme, "Jet", 1., kFALSE, kFALSE); // Data<->MC
@@ -116,15 +120,15 @@ void runAnalysis()
     if(multSelection) centrality = multSelection->GetMultiplicityPercentile("V0M");*/
 
     // compile the class (locally)
-    gROOT->LoadMacro("AliAnalysisTaskEmcalJetValidation.cxx++g");
+    //gROOT->LoadMacro("AliAnalysisTaskEmcalJetValidation.cxx++g");
     // load the addtask macro
-    gROOT->LoadMacro("AddTaskEmcalJetValidation.C");
+    //gROOT->LoadMacro("AddTaskEmcalJetValidation.C");
 
 
     // create an instance of your analysis task
-    AliAnalysisTaskEmcalJetValidation *taskJet = AddTaskEmcalJetValidation();
+    AliAnalysisTaskEmcalJetValidation *taskJet = AddTaskEmcalJetValidation("", "config.json");
 
-	//Printf("Check done %i",__LINE__);
+    //Printf("Check done %i",__LINE__);
 
     if(!mgr->InitAnalysis()) return;
     mgr->SetDebugLevel(10);
@@ -133,7 +137,7 @@ void runAnalysis()
 
     if(local) {
         // if you want to run locally, we need to define some input
-        TChain* chain = new TChain("ESDTree");
+        TChain* chain = new TChain("esdTree");
         // add a few files to the chain (change this so that your local files are added)
         chain->Add("AliESDs.root");
         // start the analysis locally, reading the events from the tchain
@@ -155,7 +159,7 @@ void runAnalysis()
         alienHandler->SetGridDataDir("/alice/data/2018/LHC18b/000285396/pass1/18000285396019.111");
         alienHandler->SetDataPattern("ESD/*/AliESDs.root");
         // MC has no prefix, data has prefix 000
-        //alienHandler->SetRunPrefix("000");
+        alienHandler->SetRunPrefix("000");
         // runnumber
         alienHandler->AddRunNumber(285396);
         // number of files per subjob
