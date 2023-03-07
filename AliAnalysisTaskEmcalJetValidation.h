@@ -57,7 +57,7 @@ public:
     void                    SetGhostArea(Double_t ga){ fGhostArea = ga; }                        // sets ghost area
     void                    SetRecoScheme(AliJetContainer::ERecoScheme_t rs){ fRecoScheme =rs;}  // recombination scheme
     void                    InitFromJson(TString filename);                                      //initialization from json file
-
+    //void                    SetDCAToVertex2D(Bool_t b) {b=kFALSE;}
 
 
     std::string             GetJsonString(const char* jsonFileName, const char* section, const char* key);

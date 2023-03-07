@@ -124,6 +124,7 @@ AliAnalysisTaskEmcalJetValidation::AliAnalysisTaskEmcalJetValidation(const char*
    fGhostArea(0.005),
    fRecoScheme(AliJetContainer::E_scheme)
 
+
 {
     // constructor
     DefineInput(0, TChain::Class());
@@ -245,26 +246,31 @@ void AliAnalysisTaskEmcalJetValidation::ExecOnceLocal(){
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     fTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
     fTrackCuts->SetName("Global Hybrid tracks, loose DCA");
-    fTrackCuts->SetMinNClustersTPC(70);
-    //fTrackCuts->SetMinNCrossedRowsOverFindableClustersTPC(0.8); //included from Johanna's set of trackcuts in o2;
-                                                                  //ERROR: no member named 'SetMinNCrossedRowsOverFindableClustersTPC' in 'AliESDtrackCuts'
-    fTrackCuts->SetMaxChi2PerClusterTPC(4.0);                   //included from Johanna's set of trackcuts in o2
     fTrackCuts->SetPtRange(0.1, 1.e10);
     fTrackCuts->SetEtaRange(-0.9, +0.9);
-
     fTrackCuts->SetRequireITSRefit(kTRUE);
     fTrackCuts->SetRequireTPCRefit(kTRUE);
+    //fTrackCuts->SetMinNClustersTPC(70);
+    fTrackCuts->SetMinNCrossedRowsTPC(70);                        // Marta suggested to use this instead of the cut on l.252
+                                                                  //because
+    fTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    fTrackCuts->SetMaxChi2PerClusterTPC(4.0);
     fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-                                          AliESDtrackCuts::kAny);    // Is this something similar to SetRequireHitsInITSLayers(1, {0, 1})
-                                                                    // and SetMaxChi2PerClusterITS(36.f) used in O2 ? I didn't see these 2 in AliPhysics
-    fTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
-    fTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
-    //fTrackCuts->SetMaxDcaXYPtDep([](float pt) { return 0.0105f + 0.0350f / pow(pt, 1.1f); }); //included from Johanna's set of trackcuts in o2
-                                                                                //ERROR: no member named 'SetMaxDcaXYPtDep' in 'AliESDtrackCuts'
-    fTrackCuts->SetAcceptKinkDaughters(kFALSE);
+                                          AliESDtrackCuts::kAny);    // similar to SetRequireHitsInITSLayers(1, {0, 1}) in O2
+    fTrackCuts->SetMaxChi2PerClusterITS(36.0);
+    //fTrackCuts->SetMinNCrossedRowsOverFindableClustersTPC(0.8); //included from Johanna's set of trackcuts in o2;
+                                                                  //ERROR: no member named 'SetMinNCrossedRowsOverFindableClustersTPC' in 'AliESDtrackCuts'
+    fTrackCuts->SetMaxDCAToVertexXYPtDep("(0.0105 + 0.0350 / TMath::Power(pt, 1.1))"); //similar to "SetMaxDcaXYPtDep" implemented in o2 task (?)
+
+    fTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);              //Not yet in O2
+    fTrackCuts->SetMaxFractionSharedTPCClusters(0.4);           //Not yet in O2
+
+    fTrackCuts->SetAcceptKinkDaughters(kFALSE);                 //Not yet in O2 task
     fTrackCuts->SetMaxDCAToVertexXY(2.4);
-    fTrackCuts->SetMaxDCAToVertexZ(3.2);
-    fTrackCuts->SetDCAToVertex2D(kTRUE);
+    fTrackCuts->SetMaxDCAToVertexZ(2.0);                        // similar to SetMaxDcaZ in O2 task (?)
+    //fTrackCuts->SetDCAToVertex2D(kTRUE);
+    fTrackCuts->SetDCAToVertex2D(kFALSE);                          //Marta suggested to set the flag as kFalse
+                                                                  //because there's no option to use the 2D cut for the DCA in O2
 
 }
 //_________________________________________________
