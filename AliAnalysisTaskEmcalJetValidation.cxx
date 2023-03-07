@@ -251,16 +251,15 @@ void AliAnalysisTaskEmcalJetValidation::ExecOnceLocal(){
     fTrackCuts->SetRequireITSRefit(kTRUE);
     fTrackCuts->SetRequireTPCRefit(kTRUE);
     //fTrackCuts->SetMinNClustersTPC(70);
-    fTrackCuts->SetMinNCrossedRowsTPC(70);                        // Marta suggested to use this instead of the cut on l.252
-                                                                  //because
-    fTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    fTrackCuts->SetMinNCrossedRowsTPC(70);    // Marta suggested to use this instead of the cut on l.253
+                                              //because basically we do track selections on the no. of crossed rows
+
+    fTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);   // Is this similar to SetMinNCrossedRowsOverFindableClustersTPC(0.8) used in O2 (?)
     fTrackCuts->SetMaxChi2PerClusterTPC(4.0);
     fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
                                           AliESDtrackCuts::kAny);    // similar to SetRequireHitsInITSLayers(1, {0, 1}) in O2
     fTrackCuts->SetMaxChi2PerClusterITS(36.0);
-    //fTrackCuts->SetMinNCrossedRowsOverFindableClustersTPC(0.8); //included from Johanna's set of trackcuts in o2;
-                                                                  //ERROR: no member named 'SetMinNCrossedRowsOverFindableClustersTPC' in 'AliESDtrackCuts'
-    fTrackCuts->SetMaxDCAToVertexXYPtDep("(0.0105 + 0.0350 / TMath::Power(pt, 1.1))"); //similar to "SetMaxDcaXYPtDep" implemented in o2 task (?)
+    fTrackCuts->SetMaxDCAToVertexXYPtDep("(0.0105 + 0.0350 / TMath::Power(pt, 1.1))"); //similar to "SetMaxDcaXYPtDep" implemented in O2 task (?)
 
     fTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);              //Not yet in O2
     fTrackCuts->SetMaxFractionSharedTPCClusters(0.4);           //Not yet in O2
