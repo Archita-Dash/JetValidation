@@ -254,19 +254,19 @@ void AliAnalysisTaskEmcalJetValidation::ExecOnceLocal(){
     fTrackCuts->SetMinNCrossedRowsTPC(70);    // Marta suggested to use this instead of the cut on l.253
                                               //because basically we do track selections on the no. of crossed rows
 
-    fTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);   // Is this similar to SetMinNCrossedRowsOverFindableClustersTPC(0.8) used in O2 (?)
+    fTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);   // similar to SetMinNCrossedRowsOverFindableClustersTPC(0.8) used in O2
     fTrackCuts->SetMaxChi2PerClusterTPC(4.0);
     fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
                                           AliESDtrackCuts::kAny);    // similar to SetRequireHitsInITSLayers(1, {0, 1}) in O2
     fTrackCuts->SetMaxChi2PerClusterITS(36.0);
     fTrackCuts->SetMaxDCAToVertexXYPtDep("(0.0105 + 0.0350 / TMath::Power(pt, 1.1))"); //similar to "SetMaxDcaXYPtDep" implemented in O2 task (?)
 
-    fTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);              //Not yet in O2
+    fTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);              // same as SetRequireGoldenChi2(true) in O2
     fTrackCuts->SetMaxFractionSharedTPCClusters(0.4);           //Not yet in O2
 
     fTrackCuts->SetAcceptKinkDaughters(kFALSE);                 //Not yet in O2 task
     fTrackCuts->SetMaxDCAToVertexXY(2.4);
-    fTrackCuts->SetMaxDCAToVertexZ(2.0);                        // similar to SetMaxDcaZ in O2 task (?)
+    fTrackCuts->SetMaxDCAToVertexZ(2.0);                        // similar to SetMaxDcaZ in O2 task
     //fTrackCuts->SetDCAToVertex2D(kTRUE);
     fTrackCuts->SetDCAToVertex2D(kFALSE);                          //Marta suggested to set the flag as kFalse
                                                                   //because there's no option to use the 2D cut for the DCA in O2
