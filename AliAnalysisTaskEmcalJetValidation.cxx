@@ -245,14 +245,13 @@ void AliAnalysisTaskEmcalJetValidation::ExecOnceLocal(){
 
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     fTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
-    fTrackCuts->SetName("Global Hybrid tracks, loose DCA");
+    fTrackCuts->SetName("Global hybrid tracks, loose DCA");
     fTrackCuts->SetPtRange(0.15, 1.e15);
     fTrackCuts->SetEtaRange(-0.9, +0.9);
     fTrackCuts->SetRequireITSRefit(kTRUE);
     fTrackCuts->SetRequireTPCRefit(kTRUE);
     //fTrackCuts->SetMinNClustersTPC(70);
-    fTrackCuts->SetMinNCrossedRowsTPC(70);    // Marta suggested to use this instead of the cut on l.253
-                                              //because basically we do track selections on the no. of crossed rows
+    fTrackCuts->SetMinNCrossedRowsTPC(70);
 
     fTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);   // similar to SetMinNCrossedRowsOverFindableClustersTPC(0.8) used in O2
     fTrackCuts->SetMaxChi2PerClusterTPC(4.0);
@@ -261,10 +260,10 @@ void AliAnalysisTaskEmcalJetValidation::ExecOnceLocal(){
     fTrackCuts->SetMaxChi2PerClusterITS(36.0);
   //  fTrackCuts->SetMaxDCAToVertexXYPtDep("(0.0105 + 0.0350 / TMath::Power(pt, 1.1))"); //similar to "SetMaxDcaXYPtDep" implemented in O2 task (?)
 
-    fTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);              // same as SetRequireGoldenChi2(true) in O2
-    fTrackCuts->SetMaxFractionSharedTPCClusters(0.4);           //Not yet in O2
+  //  fTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);           //Not in O2 (??)
+  //  fTrackCuts->SetMaxFractionSharedTPCClusters(0.4);           //Not yet in O2
 
-    fTrackCuts->SetAcceptKinkDaughters(kFALSE);                 //Not yet in O2 task
+  //  fTrackCuts->SetAcceptKinkDaughters(kFALSE);                 //Not yet in O2 task
     fTrackCuts->SetMaxDCAToVertexXY(2.4);
     fTrackCuts->SetMaxDCAToVertexZ(3.2);                        // Loose DCA cuts: similar to SetMaxDcaZ in O2 task
     //fTrackCuts->SetDCAToVertex2D(kTRUE);
