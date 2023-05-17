@@ -73,7 +73,7 @@
 
 ClassImp(AliAnalysisTaskEmcalJetValidation) // classimp: necessary for root
 
-//using namespace std;            // std namespace: so you can do things like 'cout'
+using namespace std;            // std namespace: so you can do things like 'cout'
 
 
 AliAnalysisTaskEmcalJetValidation::AliAnalysisTaskEmcalJetValidation() :
@@ -123,7 +123,6 @@ AliAnalysisTaskEmcalJetValidation::AliAnalysisTaskEmcalJetValidation(const char*
    fJetAlgo(AliJetContainer::antikt_algorithm),
    fGhostArea(0.005),
    fRecoScheme(AliJetContainer::E_scheme)
-
 
 {
     // constructor
@@ -244,37 +243,32 @@ void AliAnalysisTaskEmcalJetValidation::ExecOnceLocal(){
     fJetEtaRange = 0.9 - fJetR; //fiducial cut on jets
 
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    //All implemented tracks similar to "hybrid tracks" in jetvalidationqa.cxx in O2Physics except for SetRequireGoldenChi2(true)
     fTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
-    fTrackCuts->SetName("Global hybrid tracks, loose DCA");
+    fTrackCuts->SetName("Global Hybrid tracks, loose DCA");
     fTrackCuts->SetPtRange(0.15, 1.e15);
     fTrackCuts->SetEtaRange(-0.9, +0.9);
     fTrackCuts->SetRequireITSRefit(kTRUE);
     fTrackCuts->SetRequireTPCRefit(kTRUE);
-    //fTrackCuts->SetMinNClustersTPC(70);
     fTrackCuts->SetMinNCrossedRowsTPC(70);
-
-    fTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);   // similar to SetMinNCrossedRowsOverFindableClustersTPC(0.8) used in O2
+    fTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
     fTrackCuts->SetMaxChi2PerClusterTPC(4.0);
     fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-                                          AliESDtrackCuts::kAny);    // similar to SetRequireHitsInITSLayers(1, {0, 1}) in O2
+                                          AliESDtrackCuts::kAny);    // Is this something similar to SetRequireHitsInITSLayers(1, {0, 1})
+                                                                    // and SetMaxChi2PerClusterITS(36.f) used in O2 ? I didn't see these 2 in AliPhysics
     fTrackCuts->SetMaxChi2PerClusterITS(36.0);
-  //  fTrackCuts->SetMaxDCAToVertexXYPtDep("(0.0105 + 0.0350 / TMath::Power(pt, 1.1))"); //similar to "SetMaxDcaXYPtDep" implemented in O2 task (?)
-
-  //  fTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);           //Not in O2 (??)
-  //  fTrackCuts->SetMaxFractionSharedTPCClusters(0.4);           //Not yet in O2
-
-  //  fTrackCuts->SetAcceptKinkDaughters(kFALSE);                 //Not yet in O2 task
+    fTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
+    //fTrackCuts->SetMaxDcaXYPtDep([](float pt) { return 0.0105f + 0.0350f / pow(pt, 1.1f); }); //included from Johanna's set of trackcuts in o2
+                                                                                //ERROR: no member named 'SetMaxDcaXYPtDep' in 'AliESDtrackCuts'
     fTrackCuts->SetMaxDCAToVertexXY(2.4);
-    fTrackCuts->SetMaxDCAToVertexZ(3.2);                        // Loose DCA cuts: similar to SetMaxDcaZ in O2 task
-    //fTrackCuts->SetDCAToVertex2D(kTRUE);
-    fTrackCuts->SetDCAToVertex2D(kFALSE);                          //Marta suggested to set the flag as kFalse
-                                                                  //because there's no option to use the 2D cut for the DCA in O2
+    fTrackCuts->SetMaxDCAToVertexZ(3.2);
+    fTrackCuts->SetDCAToVertex2D(kFALSE);
 
 }
 //_________________________________________________
 void AliAnalysisTaskEmcalJetValidation::UserCreateOutputObjects()
 {
-	Printf("Check done %i",__LINE__);
+	//Printf("Check done %i",__LINE__);
 
    Bool_t oldStatus = TH1::AddDirectoryStatus();
    TH1::AddDirectory(kFALSE);
@@ -354,23 +348,22 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
   fFastJetWrapper->Clear();
 
   Int_t totTracks = fESD->GetNumberOfTracks();
+
+  cout<< "Total no. of Tracks" << totTracks << endl;
+
   TLorentzVector lVec;
 
   for(Int_t itr = 0; itr < totTracks; itr++) {
      AliESDtrack* track = static_cast< AliESDtrack*>(fESD->GetTrack(itr));      //Feeding my jet finder with tracks to produce jets
+
+     cout<< "Total no. of tracks fed to jet finder= " << fESD->GetNumberOfTracks() << endl;
+
      if(!track) continue;
      if(!fTrackCuts->AcceptTrack(track)) continue;
 
-    // lVec.SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), 0.13957);   //assume that track is pion
-    // fFastJetWrapper->AddInputVector(lVec.Px(), lVec.Py(), lVec.Pz(), lVec.E()); //fill jet constituents
+     lVec.SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), 0.13957);   //assume that track is pion
+     fFastJetWrapper->AddInputVector(lVec.Px(), lVec.Py(), lVec.Pz(), lVec.E()); //fill jet constituents
 
-    // Test for 2 hardcoded tracks : E_scheme
-    /* lVec.SetPtEtaPhiM(10, 0, 0, 0.13957);
-     fFastJetWrapper->AddInputVector(lVec.Px(), lVec.Py(), lVec.Pz(), lVec.E());
-
-     lVec.SetPtEtaPhiM(10, 0.01, 0.01, 0.13957);
-     fFastJetWrapper->AddInputVector(lVec.Px(), lVec.Py(), lVec.Pz(), lVec.E());*/
-    // Test for 2 harcoded tracks : pt_scheme
 
      //Filling Track Histograms
      fHistTrackPt->Fill(track->Pt());
@@ -381,6 +374,8 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
   fFastJetWrapper->Run();
 
   std::vector<fastjet::PseudoJet> myJets = fFastJetWrapper->GetInclusiveJets();
+
+  cout<< "Total no. of Jets= " << myJets.size() << endl;
 
   for(UInt_t ijet = 0; ijet < myJets.size(); ++ijet) {
      if(myJets.at(ijet).pt() < fMinPt) continue;  //skip ghost jets
