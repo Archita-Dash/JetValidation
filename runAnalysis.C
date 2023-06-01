@@ -122,6 +122,7 @@ void runAnalysis()
 
 
     // create an instance of your analysis task
+    AliPhysicsSelectionTask * pPhysSelTask = AddTaskPhysicsSelection();  // to remove pile-up events
     AliAnalysisTaskEmcalJetValidation *taskJet = AddTaskEmcalJetValidation("",AliVEvent::kINT7, "config.json");
 
     //Printf("Check done %i",__LINE__);
@@ -152,12 +153,12 @@ void runAnalysis()
         // set the Alien API version
         alienHandler->SetAPIVersion("V1.1x");
         // select the input data
-        alienHandler->SetGridDataDir("/alice/data/2018/LHC18b/000285396/pass1/18000285396019.111");
+        alienHandler->SetGridDataDir("/alice/data/2018/LHC18p/000294009/pass1/18000294009019.100");
         alienHandler->SetDataPattern("ESD/*/AliESDs.root");
         // MC has no prefix, data has prefix 000
         alienHandler->SetRunPrefix("000");
         // runnumber
-        alienHandler->AddRunNumber(285396);
+        alienHandler->AddRunNumber(294009);
         // number of files per subjob
         alienHandler->SetSplitMaxInputFileNumber(40);
         alienHandler->SetExecutable("myTask.sh");
