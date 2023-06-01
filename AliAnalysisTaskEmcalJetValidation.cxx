@@ -102,7 +102,8 @@ AliAnalysisTaskEmcalJetValidation::AliAnalysisTaskEmcalJetValidation() :
    fJetR(0.4),
    fJetAlgo(AliJetContainer::antikt_algorithm),
    fGhostArea(0.005),
-   fRecoScheme(AliJetContainer::E_scheme)
+   fRecoScheme(AliJetContainer::E_scheme),
+   
 {
 
 }
@@ -207,8 +208,7 @@ AliAnalysisTaskEmcalJetValidation* AliAnalysisTaskEmcalJetValidation::AddTask(TS
    }
   if(jsonconfigfile != "") task->InitFromJson(jsonconfigfile);
 
-   task->SelectCollisionCandidates(trigger);
-   task->SetDebugLevel(0);   //No debug messages 0
+  task->SetDebugLevel(0);   //No debug messages 0
 
     // output container
    AliAnalysisDataContainer *contHistos = manager->CreateContainer(myContName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:ChJetSpectra%s", AliAnalysisManager::GetCommonFileName(), myContName.Data()));
@@ -373,20 +373,26 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
 
   //DO SOME EVENT SELECTION HERE
   const AliESDVertex* vertex = (AliESDVertex*)fESD->GetPrimaryVertex();
-  if(TMath::Abs(vertex->GetZ()) > 10.) return;
+  if(TMath::Abs(vertex->GetZ()) > 10.) return;      // vertex selection
 
   //checking MB trigger selection from data
-  Bool_t passedTrigger = kFALSE;
+  //Bool_t passedTrigger = kFALSE;
 
-  UInt_t triggerMask = fInputHandler->IsEventSelected();
-    {
-      if(triggerMask & AliVEvent::kINT7){
-        passedTrigger = kTRUE;
-      }
-    }
-  //EVENTS WHICH PASSED
-  fHistNEvents->Fill(0.5);
-  fHistNEventVtx->Fill((vertex->GetZ()));
+  //UInt_t triggerMask = fInputHandler->IsEventSelected();
+  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);    // MB trigger selection
+//    {
+  //     if(triggerMask & AliVEvent::kINT7){
+  //       passedTrigger = kTRUE;
+  //     }
+  //   }
+  // //cout << "Printinf triggerMask values: " << triggerMask << endl;
+  // //cout << "Printing fInputHandler: " << fInputHandler << endl;
+  // if(passedTrigger == kTRUE){
+
+    //EVENTS WHICH PASSED
+    fHistNEvents->Fill(0.5);
+    fHistNEventVtx->Fill((vertex->GetZ()));
+
 
   fFastJetWrapper->Clear();
 
@@ -459,7 +465,7 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
      //fHistJetPt->Fill(myJets.at(ijet).area());  //fill jet area to histogram
   }
 
-
+//}
 
   //_________________________________________________________
 

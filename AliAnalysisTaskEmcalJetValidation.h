@@ -101,7 +101,7 @@ private:
     AliAnalysisTaskEmcalJetValidation(const AliAnalysisTaskEmcalJetValidation&); // not implemented
     AliAnalysisTaskEmcalJetValidation& operator=(const AliAnalysisTaskEmcalJetValidation&); // not implemented
 
-    ClassDef(AliAnalysisTaskEmcalJetValidation, 14);
+    ClassDef(AliAnalysisTaskEmcalJetValidation, 18);
 };
 
 #endif
