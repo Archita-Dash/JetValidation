@@ -102,9 +102,9 @@ AliAnalysisTaskEmcalJetValidation::AliAnalysisTaskEmcalJetValidation() :
    fJetR(0.4),
    fJetAlgo(AliJetContainer::antikt_algorithm),
    fGhostArea(0.005),
-   fRecoScheme(AliJetContainer::E_scheme),
-   
-{
+   fRecoScheme(AliJetContainer::E_scheme)
+
+   {
 
 }
 
@@ -168,7 +168,7 @@ AliAnalysisTaskEmcalJetValidation::~AliAnalysisTaskEmcalJetValidation()
 }
 
 //_________________________________________________
-AliAnalysisTaskEmcalJetValidation* AliAnalysisTaskEmcalJetValidation::AddTask(TString suffix, UInt_t trigger, TString jsonconfigfile, Bool_t readMC)
+AliAnalysisTaskEmcalJetValidation* AliAnalysisTaskEmcalJetValidation::AddTask(TString suffix, TString jsonconfigfile, Bool_t readMC)
 {
 
    // #### DEFINE MANAGER AND DATA CONTAINER NAMES
@@ -192,7 +192,6 @@ AliAnalysisTaskEmcalJetValidation* AliAnalysisTaskEmcalJetValidation::AddTask(TS
       return 0;
     }
   }
-
 
    // #### DEFINE MY ANALYSIS TASK
    TString myContName(Form("AliAnalysisTaskEmcalJetValidation"));
@@ -272,12 +271,10 @@ void AliAnalysisTaskEmcalJetValidation::ExecOnceLocal(){
     fTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
     fTrackCuts->SetMaxChi2PerClusterTPC(4.0);
     fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-                                          AliESDtrackCuts::kAny);    // Is this something similar to SetRequireHitsInITSLayers(1, {0, 1})
-                                                                    // and SetMaxChi2PerClusterITS(36.f) used in O2 ? I didn't see these 2 in AliPhysics
+                                          AliESDtrackCuts::kAny);
+
     fTrackCuts->SetMaxChi2PerClusterITS(36.0);
     fTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
-    //fTrackCuts->SetMaxDcaXYPtDep([](float pt) { return 0.0105f + 0.0350f / pow(pt, 1.1f); }); //included from Johanna's set of trackcuts in o2
-                                                                                //ERROR: no member named 'SetMaxDcaXYPtDep' in 'AliESDtrackCuts'
     fTrackCuts->SetMaxDCAToVertexXY(2.4);
     fTrackCuts->SetMaxDCAToVertexZ(3.2);
     fTrackCuts->SetDCAToVertex2D(kFALSE);
@@ -295,7 +292,6 @@ void AliAnalysisTaskEmcalJetValidation::UserCreateOutputObjects()
    AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
    if (man){
       AliInputEventHandler* inputHandler = (AliInputEventHandler*)(man->GetInputEventHandler());
-      //if (inputHandler)   fPIDResponse = inputHandler->GetPIDResponse();
    }
 
    fOutputList = new TList();
@@ -375,29 +371,24 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
   const AliESDVertex* vertex = (AliESDVertex*)fESD->GetPrimaryVertex();
   if(TMath::Abs(vertex->GetZ()) > 10.) return;      // vertex selection
 
-  //checking MB trigger selection from data
-  //Bool_t passedTrigger = kFALSE;
-
-  //UInt_t triggerMask = fInputHandler->IsEventSelected();
-  (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kINT7);    // MB trigger selection
-//    {
-  //     if(triggerMask & AliVEvent::kINT7){
-  //       passedTrigger = kTRUE;
-  //     }
-  //   }
-  // //cout << "Printinf triggerMask values: " << triggerMask << endl;
-  // //cout << "Printing fInputHandler: " << fInputHandler << endl;
-  // if(passedTrigger == kTRUE){
+  //Start MB TRIGGER SELECTION
+  Bool_t passedTrigger = kFALSE;
+  UInt_t triggerMask = fInputHandler->IsEventSelected();
+  {
+  if(triggerMask & AliVEvent::kINT7){
+         passedTrigger = kTRUE;
+  }
+  }
+  if(passedTrigger == kTRUE){
 
     //EVENTS WHICH PASSED
-    fHistNEvents->Fill(0.5);
+    fHistNEvents->Fill(1);
     fHistNEventVtx->Fill((vertex->GetZ()));
 
 
   fFastJetWrapper->Clear();
 
   Int_t totTracks = fESD->GetNumberOfTracks();
-  //cout<< "Total no. of Tracks" << totTracks << endl;
   TLorentzVector lVec;
 
   for(Int_t itr = 0; itr < totTracks; itr++) {
@@ -408,6 +399,7 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
      AliESDtrack* track = static_cast< AliESDtrack*>(fESD->GetTrack(itr));      //Feeding my jet finder with tracks to produce jets
      //cout<< "Total no. of tracks fed to jet finder= " << fESD->GetNumberOfTracks() << endl;
 
+    //START OF FILLING TRACK CUTS HISTOS
      if(!track) continue;
      if(!fTrackCuts->AcceptTrack(track)) continue;
 
@@ -437,7 +429,7 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
        chi2PerClusterITS = track->GetITSchi2()/Float_t(nClustersITS);
        fHistMaxChi2PerClusterITS->Fill(chi2PerClusterITS);
      }
-
+    //END OF FILLING TRACK CUTS HISTOS
 
 
      lVec.SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), 0.13957);   //assume that track is pion
@@ -465,7 +457,7 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
      //fHistJetPt->Fill(myJets.at(ijet).area());  //fill jet area to histogram
   }
 
-//}
+}
 
   //_________________________________________________________
 

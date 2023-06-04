@@ -62,7 +62,7 @@ void runAnalysis()
 
     #else
    	gROOT->ProcessLine(".include $ROOTSYS/include");
-    	gROOT->ProcessLine(".include $ALICE_ROOT/include");
+    gROOT->ProcessLine(".include $ALICE_ROOT/include");
     #endif
 
 
@@ -123,7 +123,7 @@ void runAnalysis()
 
     // create an instance of your analysis task
     AliPhysicsSelectionTask * pPhysSelTask = AddTaskPhysicsSelection();  // to remove pile-up events
-    AliAnalysisTaskEmcalJetValidation *taskJet = AddTaskEmcalJetValidation("",AliVEvent::kINT7, "config.json");
+    AliAnalysisTaskEmcalJetValidation *taskJet = AddTaskEmcalJetValidation("", "config.json");
 
     //Printf("Check done %i",__LINE__);
 
